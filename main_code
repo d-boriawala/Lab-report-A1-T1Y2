@@ -1,0 +1,92 @@
+!pip install rebound
+import matplotlib.pyplot as plt
+import numpy as np
+import rebound
+import time
+
+sim = rebound.Simulation()
+sim.units = ('yr','AU','kg')
+sim.t = 0.0
+
+s = 1.0 #choose scale value for mass
+x = 1.0 #choose scale value for semi-major axis
+
+m_SUN = 2e30
+
+m_b = s*3.5e-3*m_SUN #HR 8799b
+f_b = 135.0
+a_b = x*65.0
+
+m_c = s*4e-3*m_SUN #HR 8799c
+f_c = 45.0
+a_c = x*38.0
+
+m_d = s*6e-3*m_SUN #HR 8799d
+f_d = 300.0
+a_d = x*28.0
+
+m_e = s*8e-3*m_SUN #HR 8799e
+f_e = 330.0
+a_e = x*16.0
+
+m_star = 1.5*m_SUN
+
+sim.add(m=m_star,x=0,y=0,vx=0,vy=0,vz=0)
+sim.add(m=m_b,a=a_b,f=np.deg2rad(f_b))
+sim.add(m=m_c,a=a_c,f=np.deg2rad(f_c))
+sim.add(m=m_d,a=a_d,f=np.deg2rad(f_d))
+sim.add(m=m_e,a=a_e,f=np.deg2rad(f_e))
+
+sim.move_to_com()
+op = rebound.OrbitPlot(sim,unitlabel='[AU]',color=True)
+
+times = np.linspace(0,3e7,30000)
+a_b_time = np.array([])
+a_c_time = np.array([])
+a_d_time = np.array([])
+a_e_time = np.array([])
+
+e_b_time = np.array([])
+e_c_time = np.array([])
+e_d_time = np.array([])
+e_e_time = np.array([])
+
+
+start_time = time.process_time()
+
+for t in times:
+    sim.integrate(t)
+    a_b_time = np.append(a_b_time, sim.particles[1].a)
+    a_c_time = np.append(a_c_time, sim.particles[2].a)
+    a_d_time = np.append(a_d_time, sim.particles[3].a)
+    a_e_time = np.append(a_e_time, sim.particles[4].a)
+    e_b_time = np.append(e_b_time, sim.particles[1].e)
+    e_c_time = np.append(e_c_time, sim.particles[2].e)
+    e_d_time = np.append(e_d_time, sim.particles[3].e)
+    e_e_time = np.append(e_e_time, sim.particles[4].e)
+
+print(time.process_time() - start_time)
+op = rebound.OrbitPlot(sim,unitlabel='[AU]',color=True)
+
+
+fig,ax = plt.subplots()
+ax.plot(times,a_b_time,color='red',label='HR8799 b')
+ax.plot(times,a_c_time,color='blue',label='HR8799 c')
+ax.plot(times,a_d_time,color='purple',label='HR8799 d')
+ax.plot(times,a_e_time,color='yellow',label='HR8799 e')
+ax.set_xlabel('Time [yrs]')
+ax.set_ylabel('Semi-major axis [AU]')
+ax.legend()
+fig.tight_layout()
+plt.show()
+
+fig,ax = plt.subplots()
+ax.plot(times,e_b_time,color='red',label='HR8799 b')
+ax.plot(times,e_c_time,color='blue',label='HR8799 c')
+ax.plot(times,e_d_time,color='purple',label='HR8799 d')
+ax.plot(times,e_e_time,color='yellow',label='HR8799 e')
+ax.set_xlabel('Time [yrs]')
+ax.set_ylabel('Eccentricity')
+ax.legend()
+fig.tight_layout()
+plt.show()
